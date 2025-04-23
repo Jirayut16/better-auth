@@ -23,8 +23,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signInSchema as formSchema } from "@/lib/auth-schema";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 const Signin = () => {
+  const toastId = "sign-in-toast";
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,8 +38,36 @@ const Signin = () => {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { email, password } = values;
+    const { data, error } = await authClient.signIn.email(
+      {
+        email,
+        password,
+        callbackURL: "/dashboard",
+      },
+      {
+        onRequest: () => {
+          toast.loading("Signing in...", {
+            id: toastId,
+          });
+          console.log("onRequest");
+        },
+        onSuccess: () => {
+          form.reset();
+          toast.success("Signed in successfully");
+          console.log("onSuccess");
+          toast.dismiss(toastId);
+        },
+        onError: () => {
+          toast.error("Sign in failed");
+          console.log("onError");
+          toast.dismiss(toastId);
+        },
+      }
+    );
+
+    console.log({ data, error });
   }
   return (
     <Card className="w-full max-w-md mx-auto">

@@ -7,12 +7,12 @@ export const formSchema = z.object({
     .max(50, { message: "Name must be at most 50 characters long" }),
   email: z
     .string()
-    .email({ message: "Invalid email address" })
+    .email({ message: "Please enter a valid email address" })
     .min(2, { message: "Email must be at least 2 characters long" })
     .max(50, { message: "Email must be at most 50 characters long" }),
   password: z
     .string()
-    .min(6, { message: "Password must be at least 6 characters long" })
+    .min(8, { message: "Password must be at least 8 characters long" })
     .max(50, { message: "Password must be at most 50 characters long" }),
 });
 
