@@ -22,12 +22,7 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-const formSchema = z.object({
-  name: z.string().min(2).max(50),
-  email: z.string().email().min(2).max(50),
-  password: z.string().min(6).max(50),
-});
+import { formSchema } from "@/lib/auth-schema";
 
 const SignUp = () => {
   // 1. Define your form.
@@ -44,6 +39,8 @@ const SignUp = () => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
   }
+  // console.log(form.formState.errors);
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>

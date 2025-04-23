@@ -22,11 +22,7 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-const formSchema = z.object({
-  email: z.string().email().min(2).max(50),
-  password: z.string().min(6).max(50),
-});
+import { signInSchema as formSchema } from "@/lib/auth-schema";
 
 const Signin = () => {
   // 1. Define your form.
