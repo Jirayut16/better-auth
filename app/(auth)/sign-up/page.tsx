@@ -29,7 +29,6 @@ import { redirect } from "next/navigation";
 
 const SignUp = () => {
   const toastId = "sign-up-toast";
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,7 +38,6 @@ const SignUp = () => {
     },
   });
 
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { name, email, password } = values;
     const { data, error } = await authClient.signUp.email(
@@ -56,18 +54,32 @@ const SignUp = () => {
           toast.loading("Signing up...", {
             id: toastId,
           });
-          console.log("onRequest");
         },
         onSuccess: () => {
           form.reset();
-          toast.success("Signed up successfully");
-          console.log("onSuccess");
+          toast.success("Signed up successfully", {
+            style: {
+              background: "#0dd157",
+              border: "1px solid #0dd157",
+              color: "white",
+            },
+          });
           toast.dismiss(toastId);
           redirect("/sign-in");
         },
-        onError: () => {
-          toast.error("Sign up failed");
-          console.log("onError");
+        onError: (ctx) => {
+          toast.error("Sign up failed", {
+            style: {
+              background: "#fb4143",
+              border: "1px solid #fb4143",
+              color: "white",
+            },
+          });
+          form.setError("email", {
+            type: "manual",
+            message: ctx.error.message,
+          });
+          toast.dismiss(toastId);
         },
       }
     );
@@ -77,10 +89,12 @@ const SignUp = () => {
   // console.log(form.formState.errors);
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto text-white" id="glass">
       <CardHeader>
-        <CardTitle>Sing up</CardTitle>
-        <CardDescription>Create an account</CardDescription>
+        <CardTitle className="text-4xl text-center">Sing up</CardTitle>
+        <CardDescription className="text-lg text-center">
+          Create an account
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -91,7 +105,7 @@ const SignUp = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input placeholder="name" {...field} />
                   </FormControl>
@@ -128,7 +142,12 @@ const SignUp = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            <Button
+              className="w-full bg-destructive hover:bg-red-500 transition-colors duration-300 ease-in-out cursor-pointer"
+              type="submit"
+            >
+              Submit
+            </Button>
           </form>
         </Form>
       </CardContent>
@@ -136,7 +155,8 @@ const SignUp = () => {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?
-          <Link href="/sign-in" className="text-primary hover:underline">
+          <Link href="/sign-in" className="text-white hover:underline">
+            {" "}
             Sign in
           </Link>
         </p>

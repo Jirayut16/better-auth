@@ -1,37 +1,43 @@
-import { AirVent } from "lucide-react";
+"use client";
+import { UserLock } from "lucide-react";
 import Link from "next/link";
 import { Button, buttonVariants } from "./ui/button";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
+import { toast } from "sonner";
+const Navbar = () => {
+  const { data: session } = authClient.useSession();
+  const handleSignout = async () => {
+    await authClient.signOut();
+    toast.success("Signed out successfully", {
+      style: {
+        background: "#0dd157",
+        border: "1px solid #0dd157",
+        color: "white",
+      },
+    });
+    redirect("/sign-in");
+  };
 
-const Navbar = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
   return (
     <div className="border-b px-4">
       <div className="flex items-center justify-between mx-auto max-w-4xl h-16">
-        <Link href="/">
-          <AirVent className="w-6 h-6" />
-          <span className="font-bold">Better Auth</span>
+        <Link href="/" className="flex items-center gap-2">
+          <UserLock className="w-8 h-8" />
+          <span className="font-bold text-2xl">Better Auth</span>
         </Link>
         <div>
           {session ? (
-            <form
-              action={async () => {
-                "use server";
-                await auth.api.signOut({
-                  headers: await headers(),
-                });
-                redirect("/");
-              }}
+            <Button
+              onClick={handleSignout}
+              type="submit"
+              className="cursor-pointer"
             >
-              <Button type="submit">Signout</Button>
-            </form>
+              Sign out
+            </Button>
           ) : (
             <Link href="/sign-in" className={buttonVariants()}>
-              Signin
+              Sign in
             </Link>
           )}
         </div>

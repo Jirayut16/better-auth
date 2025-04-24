@@ -119,3 +119,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+#glass {
+  background: rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+#auth-layout {
+  background-image: url("/bg-login.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}

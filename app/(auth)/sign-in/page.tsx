@@ -28,7 +28,6 @@ import { toast } from "sonner";
 
 const Signin = () => {
   const toastId = "sign-in-toast";
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,7 +36,6 @@ const Signin = () => {
     },
   });
 
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const { email, password } = values;
     const { data, error } = await authClient.signIn.email(
@@ -51,18 +49,34 @@ const Signin = () => {
           toast.loading("Signing in...", {
             id: toastId,
           });
-          console.log("onRequest");
         },
         onSuccess: () => {
           form.reset();
-          toast.success("Signed in successfully");
-          console.log("onSuccess");
+          toast.success("Signed in successfully", {
+            style: {
+              background: "#0dd157",
+              border: "1px solid #0dd157",
+              color: "white",
+            },
+          });
           toast.dismiss(toastId);
         },
         onError: () => {
-          toast.error("Sign in failed");
-          console.log("onError");
+          toast.error("Sign in failed", {
+            style: {
+              background: "#fb4143",
+              border: "1px solid #fb4143",
+              color: "white",
+            },
+          });
           toast.dismiss(toastId);
+          form.setError("email", {
+            type: "manual",
+          });
+          form.setError("password", {
+            type: "manual",
+            message: "Invalid email or password",
+          });
         },
       }
     );
@@ -70,10 +84,10 @@ const Signin = () => {
     console.log({ data, error });
   }
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto text-white" id="glass">
       <CardHeader>
-        <CardTitle>Sing in</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-4xl text-center">Sing in</CardTitle>
+        <CardDescription className="text-lg text-center">
           Welcome back! Please enter your details
         </CardDescription>
       </CardHeader>
@@ -109,7 +123,12 @@ const Signin = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            <Button
+              className="w-full bg-destructive hover:bg-red-500 transition-colors duration-300 ease-in-out cursor-pointer"
+              type="submit"
+            >
+              Sign in
+            </Button>
           </form>
         </Form>
       </CardContent>
@@ -117,7 +136,7 @@ const Signin = () => {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account yet?{" "}
-          <Link href="/sign-up" className="text-primary hover:underline">
+          <Link href="/sign-up" className="text-white hover:underline">
             Sign up
           </Link>
         </p>
