@@ -7,11 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,23 +20,34 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { formSchema } from "@/lib/auth-schema";
+import { signupSchema } from "@/lib/auth-schema";
 import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import {
+  ToastDismiss,
+  ToastError,
+  ToastLoading,
+  ToastSuccess,
+} from "@/components/toast";
+import { LoadingButton } from "@/components/loading-button";
+import { useState } from "react";
+import LoginWithGoogleButton from "@/components/login-google";
+import LoginWithGithubButton from "@/components/login-github";
 
 const SignUp = () => {
-  const toastId = "sign-up-toast";
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const form = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof signupSchema>) {
     const { name, email, password } = values;
     const { data, error } = await authClient.signUp.email(
       {
@@ -47,42 +56,39 @@ const SignUp = () => {
         name,
         image:
           "https://img.lovepik.com/png/20231125/man-avatar-image-for-profile-child-diverse-guy_693690_wh860.png",
-        callbackURL: "/sign-in",
       },
       {
         onRequest: () => {
-          toast.loading("Signing up...", {
-            id: toastId,
-          });
+          setPending(true);
+          {
+            ToastLoading({ message: "Signing up..." });
+          }
         },
         onSuccess: () => {
           form.reset();
-          toast.success("Signed up successfully", {
-            style: {
-              background: "#0dd157",
-              border: "1px solid #0dd157",
-              color: "white",
-            },
-          });
-          toast.dismiss(toastId);
-          redirect("/sign-in");
+          {
+            ToastSuccess({ message: "Signed up successfully" });
+          }
+          {
+            ToastDismiss();
+          }
+          router.push("/sign-in");
         },
         onError: (ctx) => {
-          toast.error("Sign up failed", {
-            style: {
-              background: "#fb4143",
-              border: "1px solid #fb4143",
-              color: "white",
-            },
-          });
+          {
+            ToastError({ message: "Sign up failed" });
+          }
           form.setError("email", {
             type: "manual",
             message: ctx.error.message,
           });
-          toast.dismiss(toastId);
+          {
+            ToastDismiss();
+          }
         },
       }
     );
+    setPending(false);
 
     console.log({ data, error });
   }
@@ -99,7 +105,7 @@ const SignUp = () => {
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -107,9 +113,8 @@ const SignUp = () => {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="name" {...field} />
+                    <Input placeholder="John Doe" {...field} />
                   </FormControl>
-                  <FormDescription>Enter your name</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -121,9 +126,8 @@ const SignUp = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="email" {...field} />
+                    <Input placeholder="example@gmail.com" {...field} />
                   </FormControl>
-                  <FormDescription>Enter your email</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -135,21 +139,39 @@ const SignUp = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="password" {...field} />
+                    <Input type="password" placeholder="********" {...field} />
                   </FormControl>
-                  <FormDescription>Enter your password</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button
-              className="w-full bg-destructive hover:bg-red-500 transition-colors duration-300 ease-in-out cursor-pointer"
-              type="submit"
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <LoadingButton
+              pending={pending}
+              classname="bg-destructive hover:bg-red-500 transition-colors duration-300 ease-in-out cursor-pointer"
             >
-              Submit
-            </Button>
+              Sign up
+            </LoadingButton>
+            <hr />
           </form>
         </Form>
+        <div className="flex gap-2 justify-between mt-4">
+          <LoginWithGoogleButton text="Sign up with Google" />
+          <LoginWithGithubButton text="Sign up with Github" />
+        </div>
       </CardContent>
 
       <CardFooter className="flex justify-center">

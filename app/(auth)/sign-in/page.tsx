@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -22,54 +21,60 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { signInSchema as formSchema } from "@/lib/auth-schema";
+import { signInSchema } from "@/lib/auth-schema";
 import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import {
+  ToastDismiss,
+  ToastError,
+  ToastLoading,
+  ToastSuccess,
+} from "@/components/toast";
+import { LoadingButton } from "@/components/loading-button";
+import { useState } from "react";
+import LoginWithGoogleButton from "@/components/login-google";
+import LoginWithGithubButton from "@/components/login-github";
 
 const Signin = () => {
-  const toastId = "sign-in-toast";
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof signInSchema>) {
     const { email, password } = values;
     const { data, error } = await authClient.signIn.email(
       {
         email,
         password,
-        callbackURL: "/dashboard",
       },
       {
         onRequest: () => {
-          toast.loading("Signing in...", {
-            id: toastId,
-          });
+          {
+            ToastLoading({ message: "Signing in..." });
+          }
+          setPending(true);
         },
         onSuccess: () => {
           form.reset();
-          toast.success("Signed in successfully", {
-            style: {
-              background: "#0dd157",
-              border: "1px solid #0dd157",
-              color: "white",
-            },
-          });
-          toast.dismiss(toastId);
+          {
+            ToastSuccess({ message: "Signed in successfully" });
+          }
+          {
+            ToastDismiss();
+          }
+          router.push("/dashboard");
         },
         onError: () => {
-          toast.error("Sign in failed", {
-            style: {
-              background: "#fb4143",
-              border: "1px solid #fb4143",
-              color: "white",
-            },
-          });
-          toast.dismiss(toastId);
+          {
+            ToastError({ message: "Sign in failed" });
+          }
+
           form.setError("email", {
             type: "manual",
           });
@@ -77,12 +82,16 @@ const Signin = () => {
             type: "manual",
             message: "Invalid email or password",
           });
+          {
+            ToastDismiss();
+          }
         },
       }
     );
-
+    setPending(false);
     console.log({ data, error });
   }
+
   return (
     <Card className="w-full max-w-md mx-auto text-white" id="glass">
       <CardHeader>
@@ -94,7 +103,7 @@ const Signin = () => {
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -123,14 +132,23 @@ const Signin = () => {
                 </FormItem>
               )}
             />
-            <Button
-              className="w-full bg-destructive hover:bg-red-500 transition-colors duration-300 ease-in-out cursor-pointer"
-              type="submit"
+            <LoadingButton
+              pending={pending}
+              classname="bg-destructive hover:bg-red-500 transition-colors duration-300 ease-in-out cursor-pointer"
             >
               Sign in
-            </Button>
+            </LoadingButton>
+            <hr />
           </form>
         </Form>
+        <div className="flex gap-2 justify-between mt-4 w-full">
+          <div className="w-full">
+            <LoginWithGoogleButton text="Continue with Google" />
+          </div>
+          <div className=" w-full">
+            <LoginWithGithubButton text="Continue with Github" />
+          </div>
+        </div>
       </CardContent>
 
       <CardFooter className="flex justify-center">

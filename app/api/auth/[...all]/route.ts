@@ -28,7 +28,9 @@ const aj = arcjet({
 const betterAuthHandlers = toNextJsHandler(auth.handler);
 
 const ajProtectedPOST = async (req: NextRequest) => {
-  const { email } = await req.clone().json(); //req body ที่ ส่งมา
+  const reqForArcjet = req.clone(); //สำหรับ Arcjet
+  const reqForAuth = req.clone(); //สำหรับ BetterAuth
+  const { email } = await reqForArcjet.json(); //req body ที่ ส่งมา
 
   const decision = await aj.protect(req, { email });
 
@@ -57,7 +59,7 @@ const ajProtectedPOST = async (req: NextRequest) => {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
   } else {
-    return betterAuthHandlers.POST(req);
+    return betterAuthHandlers.POST(reqForAuth);
   }
 };
 export { ajProtectedPOST as POST };
