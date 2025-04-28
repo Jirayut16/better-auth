@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma";
 import { openAPI } from "better-auth/plugins";
+import { sendEmail } from "./email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -9,6 +10,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
   },
   socialProviders: {
     google: {
@@ -20,5 +22,19 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    //รับ user token มา แล้วส่งไป email
+    sendVerificationEmail: async ({ user, token }) => {
+      const verificationUrl = `${process.env.BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${process.env.EMAIL_VERIFICATION_CALLBACK_URL}`;
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email address",
+        html: `<p>Please click the following link to verify your email address: <a href="${verificationUrl}">${verificationUrl}</a></p>`,
+      });
+    },
+  },
+
   plugins: [openAPI()],
 });

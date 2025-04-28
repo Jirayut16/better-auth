@@ -67,7 +67,9 @@ const SignUp = () => {
         onSuccess: () => {
           form.reset();
           {
-            ToastSuccess({ message: "Signed up successfully" });
+            ToastSuccess({
+              message: "Signed up successfully, please verify your email",
+            });
           }
           {
             ToastDismiss();

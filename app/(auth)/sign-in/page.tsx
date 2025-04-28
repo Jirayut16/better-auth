@@ -70,18 +70,28 @@ const Signin = () => {
           }
           router.push("/dashboard");
         },
-        onError: () => {
+        onError: (ctx) => {
           {
             ToastError({ message: "Sign in failed" });
           }
+          if (ctx.error.code === "INVALID_EMAIL_OR_PASSWORD") {
+            form.setError("password", {
+              type: "manual",
+              message: "Invalid email or password",
+            });
+          }
+          if (ctx.error.code === "EMAIL_NOT_VERIFIED") {
+            form.setError("password", {
+              type: "manual",
+              message: "Please verify your email",
+            });
+          } else {
+            form.setError("email", {
+              type: "manual",
+              message: ctx.error.message,
+            });
+          }
 
-          form.setError("email", {
-            type: "manual",
-          });
-          form.setError("password", {
-            type: "manual",
-            message: "Invalid email or password",
-          });
           {
             ToastDismiss();
           }
@@ -125,7 +135,7 @@ const Signin = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="password" {...field} />
+                    <Input type="password" placeholder="********" {...field} />
                   </FormControl>
                   <FormDescription>Enter your password</FormDescription>
                   <FormMessage />
