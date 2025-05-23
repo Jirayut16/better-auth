@@ -27,7 +27,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     //รับ user token มา แล้วส่งไป email
     sendVerificationEmail: async ({ user, token }) => {
-      const verificationUrl = `${process.env.BETTER_AUTH_URL}/api/auth/verify-email?token=${token}&callbackURL=${process.env.EMAIL_VERIFICATION_CALLBACK_URL}`;
+      const verificationUrl = `${process.env.BETTER_AUTH_URL_PROD}/api/auth/verify-email?token=${token}&callbackURL=${process.env.EMAIL_VERIFICATION_CALLBACK_URL_PROD}`;
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",
