@@ -80,6 +80,8 @@ const SignUp = () => {
           {
             ToastError({ message: "Sign up failed" });
           }
+          console.log(ctx.error);
+
           form.setError("email", {
             type: "manual",
             message: ctx.error.message,
