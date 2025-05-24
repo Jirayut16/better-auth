@@ -1,4 +1,5 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 export const sendEmail = async ({
   to,
@@ -9,30 +10,16 @@ export const sendEmail = async ({
   subject: string;
   html: string;
 }) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const devFrom = "dev@example.com";
   try {
-    const info = await transporter.sendMail({
-      from: devFrom,
+    const response = await resend.emails.send({
+      from: "Acme <onboarding@resend.dev>",
       to: to.toLowerCase().trim(),
       subject: subject.trim(),
       html: html.trim(),
     });
-    console.log("Email sent (dev mode):", info.messageId);
-    console.log("Preview URL:", nodemailer.getTestMessageUrl(info) || "");
-    console.log("info", info);
-
     return {
       success: true,
-      messageId: info.messageId,
+      messageId: response.data,
     };
   } catch (error) {
     console.error("Error sending email:", error);
